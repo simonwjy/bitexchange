@@ -10,7 +10,7 @@ type OrderType int
 
 const (
 	BUYORDER  OrderType = 0
-	SELLORDER OrderType = 0
+	SELLORDER OrderType = 1
 )
 
 type Order struct {
