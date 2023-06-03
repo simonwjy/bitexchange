@@ -10,9 +10,9 @@ import (
 func Test_OrderQueue(t *testing.T) {
 	t.Run("add a new bid order", func(t *testing.T) {
 		bidQueue := NewQueue()
-		bidItem1 := NewBidItem("id01", decimal.NewFromFloat(1), decimal.NewFromFloat(10), decimal.Zero)
-		bidItem2 := NewBidItem("id02", decimal.NewFromFloat(3), decimal.NewFromFloat(100), decimal.Zero)
-		bidItem3 := NewBidItem("id03", decimal.NewFromFloat(1), decimal.NewFromFloat(200), decimal.Zero)
+		bidItem1 := NewBidItem("id01", decimal.NewFromFloat(1), decimal.NewFromFloat(10), decimal.Zero, 1110)
+		bidItem2 := NewBidItem("id02", decimal.NewFromFloat(3), decimal.NewFromFloat(100), decimal.Zero, 1111)
+		bidItem3 := NewBidItem("id03", decimal.NewFromFloat(1), decimal.NewFromFloat(200), decimal.Zero, 1112)
 		bidQueue.Push(bidItem1)
 		bidQueue.Push(bidItem2)
 		bidQueue.Push(bidItem3)
@@ -34,9 +34,9 @@ func Test_OrderQueue(t *testing.T) {
 
 	t.Run("add a new ask order", func(t *testing.T) {
 		askQueue := NewQueue()
-		askItem1 := NewAskItem("id01", decimal.NewFromFloat(1), decimal.NewFromFloat(10), decimal.Zero)
-		askItem2 := NewAskItem("id02", decimal.NewFromFloat(3), decimal.NewFromFloat(100), decimal.Zero)
-		askItem3 := NewAskItem("id03", decimal.NewFromFloat(1), decimal.NewFromFloat(200), decimal.Zero)
+		askItem1 := NewAskItem("id01", decimal.NewFromFloat(1), decimal.NewFromFloat(10), decimal.Zero, 1110)
+		askItem2 := NewAskItem("id02", decimal.NewFromFloat(3), decimal.NewFromFloat(100), decimal.Zero, 1111)
+		askItem3 := NewAskItem("id03", decimal.NewFromFloat(1), decimal.NewFromFloat(200), decimal.Zero, 1112)
 		askQueue.Push(askItem1)
 		askQueue.Push(askItem2)
 		askQueue.Push(askItem3)

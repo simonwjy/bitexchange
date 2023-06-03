@@ -1,8 +1,6 @@
 package me
 
 import (
-	"time"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -24,6 +22,10 @@ type Order struct {
 
 func (o *Order) GetOrderID() string {
 	return o.orderID
+}
+
+func (o *Order) SetUnits(units decimal.Decimal) {
+	o.units = units
 }
 
 func (o *Order) SetIndex(index int) {
@@ -62,14 +64,20 @@ func (a *AskItem) GetOrderType() OrderType {
 	return SELLORDER
 }
 
-func NewAskItem(orderID string, price, amount, units decimal.Decimal) *AskItem {
+func NewAskItem(orderID string, price, amount, units decimal.Decimal, createTime int64) *AskItem {
+	if amount.IsZero() {
+		amount = price.Mul(units)
+	} else if units.IsZero() {
+		units = amount.Div(price)
+	}
+
 	return &AskItem{
 		Order: Order{
 			orderID:     orderID,
 			price:       price,
 			amount:      amount,
 			units:       units,
-			createdTime: time.Now().UnixMicro(),
+			createdTime: createTime,
 		},
 	}
 }
@@ -86,14 +94,20 @@ func (b *BidItem) GetOrderType() OrderType {
 	return BUYORDER
 }
 
-func NewBidItem(orderID string, price, amount, units decimal.Decimal) *BidItem {
+func NewBidItem(orderID string, price, amount, units decimal.Decimal, createTime int64) *BidItem {
+	if amount.IsZero() {
+		amount = price.Mul(units)
+	} else if units.IsZero() {
+		units = amount.Div(price)
+	}
+
 	return &BidItem{
 		Order: Order{
 			orderID:     orderID,
 			price:       price,
 			amount:      amount,
 			units:       units,
-			createdTime: time.Now().UnixNano(),
+			createdTime: createTime,
 		},
 	}
 }

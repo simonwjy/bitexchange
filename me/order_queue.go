@@ -9,6 +9,7 @@ import (
 
 type QueueItem interface {
 	GetOrderID() string
+	SetUnits(decimal.Decimal)
 	SetIndex(index int)
 	GetIndex() int
 	GetPrice() decimal.Decimal
@@ -16,6 +17,7 @@ type QueueItem interface {
 	GetUnits() decimal.Decimal
 	GetCreateTime() int64
 	Less(item QueueItem) bool
+	GetOrderType() OrderType
 }
 
 type PriorityQueue []QueueItem
@@ -33,10 +35,11 @@ func (p PriorityQueue) Swap(i, j int) {
 }
 
 func (p *PriorityQueue) Pop() interface{} {
-	n := len(*p)
-	v := (*p)[n-1]
+	old := *p
+	n := len(old)
+	v := old[n-1]
 	v.SetIndex(-1)
-	*p = (*p)[:n-1]
+	*p = old[:n-1]
 	return v
 }
 
@@ -90,7 +93,7 @@ func (o *OrderQueue) Get(index int) QueueItem {
 }
 
 func (o *OrderQueue) Top() QueueItem {
-	return (*o.pq)[0]
+	return o.Get(0)
 }
 
 func (o *OrderQueue) Remove(orderID string) QueueItem {
@@ -105,4 +108,14 @@ func (o *OrderQueue) Remove(orderID string) QueueItem {
 	item := heap.Remove(o.pq, (*oldItem).GetIndex())
 	delete(o.m, orderID)
 	return item.(QueueItem)
+}
+
+func (o *OrderQueue) clean() {
+	o.Lock()
+	defer o.Unlock()
+
+	pq := make(PriorityQueue, 0)
+	heap.Init(&pq)
+	o.pq = &pq
+	o.m = make(map[string]*QueueItem)
 }
