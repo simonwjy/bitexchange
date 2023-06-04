@@ -31,7 +31,7 @@ func NewOrderBook(tradePair string) *OrderBook {
 	}
 
 	go o.matching()
-	// go o.storingTradedOrder()
+	go o.storingTradedOrder()
 	return o
 }
 
@@ -65,7 +65,7 @@ func (o *OrderBook) matching() {
 		case newOrder := <-o.ChNewOrder:
 			go o.processNewOrder(newOrder)
 		default:
-			go o.processLimitOrder()
+			o.processLimitOrder()
 		}
 	}
 }
@@ -79,56 +79,38 @@ func (o *OrderBook) processNewOrder(order QueueItem) {
 }
 
 func (o *OrderBook) processLimitOrder() {
-	ok := func() bool {
-		if o.askQueue == nil || o.bidQueue == nil {
-			return false
-		} else if o.askQueue.Len() == 0 || o.bidQueue.Len() == 0 {
-			return false
-		}
-
-		askTopOrder := o.askQueue.Top()
-		bidTopOrder := o.bidQueue.Top()
-		defer func() {
-			if askTopOrder.GetUnits().Equal(decimal.Zero) {
-				o.askQueue.Remove(askTopOrder.GetOrderID())
-			}
-
-			if bidTopOrder.GetUnits().Equal(decimal.Zero) {
-				o.bidQueue.Remove(bidTopOrder.GetOrderID())
-			}
-		}()
-
-		if bidTopOrder.GetPrice().GreaterThanOrEqual(askTopOrder.GetPrice()) {
-			var tradeUnits = decimal.Zero
-			var tradePrice = decimal.Zero
-			// tradeUnits := minVal(askTopOrder.GetUnits(), bidTopOrder.GetUnits())
-			if bidTopOrder.GetUnits().Cmp(askTopOrder.GetUnits()) >= 0 {
-				tradeUnits = askTopOrder.GetUnits()
-			} else if bidTopOrder.GetUnits().Cmp(askTopOrder.GetUnits()) == -1 {
-				tradeUnits = bidTopOrder.GetUnits()
-			}
-
-			askTopOrder.SetUnits(askTopOrder.GetUnits().Sub(tradeUnits))
-			bidTopOrder.SetUnits(bidTopOrder.GetUnits().Sub(tradeUnits))
-
-			if askTopOrder.GetCreateTime() >= bidTopOrder.GetCreateTime() {
-				tradePrice = bidTopOrder.GetPrice()
-			} else {
-				tradePrice = askTopOrder.GetPrice()
-			}
-			o.sendTradeResult(askTopOrder.GetOrderID(), bidTopOrder.GetOrderID(), tradeUnits, tradePrice)
-			return true
-		}
-		return false
-	}()
-	if !ok {
-		time.Sleep(time.Duration(200) * time.Millisecond)
+	if o.askQueue == nil || o.bidQueue == nil {
+		return
+	} else if o.askQueue.Len() == 0 || o.bidQueue.Len() == 0 {
+		return
 	}
-	// else {
-	// 	if Debug {
-	// 		time.Sleep(time.Second * time.Duration(1))
-	// 	}
-	// }
+
+	askTopOrder := o.askQueue.Top()
+	bidTopOrder := o.bidQueue.Top()
+	defer func() {
+		if askTopOrder.GetUnits().Equal(decimal.Zero) {
+			o.askQueue.Remove(askTopOrder.GetOrderID())
+		}
+
+		if bidTopOrder.GetUnits().Equal(decimal.Zero) {
+			o.bidQueue.Remove(bidTopOrder.GetOrderID())
+		}
+	}()
+
+	if bidTopOrder.GetPrice().GreaterThanOrEqual(askTopOrder.GetPrice()) {
+		var tradeUnits, tradePrice decimal.Decimal
+		tradeUnits = minVal(askTopOrder.GetUnits(), bidTopOrder.GetUnits())
+		askTopOrder.SetUnits(askTopOrder.GetUnits().Sub(tradeUnits))
+		bidTopOrder.SetUnits(bidTopOrder.GetUnits().Sub(tradeUnits))
+
+		if askTopOrder.GetCreateTime() >= bidTopOrder.GetCreateTime() {
+			tradePrice = bidTopOrder.GetPrice()
+		} else {
+			tradePrice = askTopOrder.GetPrice()
+		}
+		o.sendTradeResult(askTopOrder.GetOrderID(), bidTopOrder.GetOrderID(), tradeUnits, tradePrice)
+		return
+	}
 }
 
 func (o *OrderBook) sendTradeResult(askOrderID, bidOrderID string, units, price decimal.Decimal) {
@@ -155,14 +137,14 @@ func (o *OrderBook) storingTradedOrder() {
 	}
 }
 
-func (o *OrderBook) clean() {
+func (o *OrderBook) cleanAll() {
 	o.askQueue.clean()
 	o.bidQueue.clean()
 }
 
-// func minVal(a, b decimal.Decimal) decimal.Decimal {
-// 	if a.GreaterThan(b) {
-// 		return b
-// 	}
-// 	return a
-// }
+func minVal(a, b decimal.Decimal) decimal.Decimal {
+	if a.GreaterThan(b) {
+		return b
+	}
+	return a
+}
