@@ -16,7 +16,7 @@ type OrderBook struct {
 	bidQueue      *OrderQueue
 
 	latestPrice  decimal.Decimal
-	tradedOrders []TradedOrder
+	tradedOrders []TradedOrder // TODO: persitence storage for traded order
 	sync.Mutex
 }
 
@@ -140,6 +140,7 @@ func (o *OrderBook) storingTradedOrder() {
 func (o *OrderBook) cleanAll() {
 	o.askQueue.clean()
 	o.bidQueue.clean()
+	o.tradedOrders = []TradedOrder{}
 }
 
 func minVal(a, b decimal.Decimal) decimal.Decimal {
