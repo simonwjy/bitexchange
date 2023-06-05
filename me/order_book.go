@@ -121,7 +121,7 @@ func (o *OrderBook) sendTradeResult(askOrderID, bidOrderID string, units, price 
 	tradedOrder.TradePair = o.tradePair
 	tradedOrder.AskOrderID = askOrderID
 	tradedOrder.BidOrderID = bidOrderID
-	tradedOrder.createdTime = time.Now().UnixNano()
+	tradedOrder.createdTime = time.Now().Unix()
 	tradedOrder.Units = units
 	tradedOrder.Price = price
 	tradedOrder.Amount = units.Mul(price)
