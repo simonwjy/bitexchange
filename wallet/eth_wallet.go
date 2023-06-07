@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"math/big"
+	"regexp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -96,4 +97,9 @@ func (e *ETHWallet) GetAccountBalance(ctx context.Context, accountAddr string, b
 	}
 
 	return decimal.NewFromBigInt(balance, -18), nil
+}
+
+func (e *ETHWallet) IsValidAddress(ctx context.Context, accountAddr string) bool {
+	re := regexp.MustCompile("^0x[0-9a-fA-F]{40}$")
+	return re.MatchString(accountAddr)
 }

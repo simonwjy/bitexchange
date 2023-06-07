@@ -22,6 +22,9 @@ func Test_EthWallet(t *testing.T) {
 	assert.Empty(t, err)
 	assert.NotEmpty(t, pbAddress)
 
+	isValid := ethWallet.IsValidAddress(ctx, pbAddress)
+	assert.True(t, isValid)
+
 	err = ethWallet.SendTransaction(ctx, walletAccountPK, pbAddress, decimal.NewFromBigInt(big.NewInt(15), 18))
 	assert.Empty(t, err)
 
