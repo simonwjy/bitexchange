@@ -21,7 +21,7 @@ type ETHWallet struct {
 	ethClient *ethclient.Client
 }
 
-func NewETHWallet() (*ETHWallet, error) {
+func NewETHWallet() (Wallet, error) {
 	eClient, err := ethclient.Dial(networkURL)
 	if err != nil {
 		return nil, err
